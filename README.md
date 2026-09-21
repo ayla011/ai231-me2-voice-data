@@ -19,6 +19,12 @@ access-restricted Drive folder — never here. See
 
 ## Quickstart
 
+**Requires Python 3.10+** — check with `python --version`. This is a
+hard requirement, not a suggestion: `pywhispercpp` fails to even import
+on 3.9 and older. If your default/base env is older, make a new one
+first (`conda create -n voicedata python=3.10`, or pick a 3.10+
+interpreter in VS Code).
+
 Activate whatever Python environment you're recording with (a conda env,
 or the venv VS Code creates when you pick an interpreter) — `setup.py`
 installs into that same one, so there's no separate venv to set up
