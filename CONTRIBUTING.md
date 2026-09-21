@@ -6,14 +6,11 @@ many times as you want before approving it — only approved takes count.
 
 ## 0. Prerequisites
 
-- **Python 3.10 or newer**, already active as a conda env or a venv
-  (e.g. the one VS Code creates when you pick an interpreter for this
-  folder) — check with `python --version`. This is a hard requirement:
-  `pywhispercpp` (below) fails to even import on 3.9 and older. If
-  you're on an older default/base env, make a new one:
-  `conda create -n voicedata python=3.10` or pick a 3.10+ interpreter in
-  VS Code.
-- `git`
+- *Some* Python 3 (any recent version) and `git` — that's genuinely it.
+  `setup.py` handles the rest, including finding a Python 3.10+
+  interpreter on your system automatically if the one you have isn't
+  new enough (`pywhispercpp`, used for live transcription, requires
+  3.10+ and fails to even import on 3.9 and older).
 - A working microphone, in as quiet a room as you can manage
 
 No compiler, cmake, or manual whisper.cpp build needed — see step 2.
@@ -27,24 +24,35 @@ cd ai231-me2-voice-data
 
 ## 2. Set up (one-time)
 
-With your conda env or venv active:
-
 ```
-python setup.py
+python3 setup.py     # macOS/Linux
+python setup.py      # Windows
 ```
 
-This pip-installs `requirements.txt` into whichever interpreter you had
-active (it never creates a separate environment of its own) and
-pre-downloads the default whisper model (`base.en`, ~140MB) so your
-first recording session doesn't stall on a download. Windows, macOS, and
-Linux all just work — the whisper binary comes prebuilt inside the
-`pywhispercpp` package.
+This builds its own `.venv` in this folder (searching your system for a
+3.10+ Python first if the one that ran this script is too old), installs
+`requirements.txt` into it, and pre-downloads the default whisper model
+(`base.en`, ~140MB) so your first recording session doesn't stall on a
+download. Windows, macOS, and Linux all just work — the whisper binary
+comes prebuilt inside the `pywhispercpp` package. Safe to re-run; it
+reuses `.venv` if it's already there and looks fine.
+
+If it can't find any Python 3.10+ anywhere, it'll tell you and point you
+to https://python.org/downloads/ (or `brew install python@3.12` on
+macOS) — install one and re-run.
 
 ## 3. Record, transcribe, judge, approve
 
+Run with `.venv`'s own python directly, so there's no dependence on your
+shell's PATH:
+
 ```
-python scripts/record.py --speaker-id <yourid>
+.venv/bin/python scripts/record.py --speaker-id <yourid>            # macOS/Linux
+.venv\Scripts\python.exe scripts\record.py --speaker-id <yourid>    # Windows
 ```
+
+(Or `source .venv/bin/activate` / `.venv\Scripts\activate` once, then
+just `python scripts/record.py ...` for the rest of the session.)
 
 Use the `speaker_id` convention your group agreed on (see
 `docs/drive_folder_structure.md`) — it becomes both your output folder

@@ -19,24 +19,28 @@ access-restricted Drive folder — never here. See
 
 ## Quickstart
 
-**Requires Python 3.10+** — check with `python --version`. This is a
-hard requirement, not a suggestion: `pywhispercpp` fails to even import
-on 3.9 and older. If your default/base env is older, make a new one
-first (`conda create -n voicedata python=3.10`, or pick a 3.10+
-interpreter in VS Code).
-
-Activate whatever Python environment you're recording with (a conda env,
-or the venv VS Code creates when you pick an interpreter) — `setup.py`
-installs into that same one, so there's no separate venv to set up
-first.
+You need *some* Python 3 installed to kick this off — that's it.
+`setup.py` builds its own `.venv` in this folder and, if the Python that
+ran it is older than 3.10 (which `pywhispercpp` requires), it
+automatically searches your system for a newer one and uses that
+instead. No conda env or pre-made venv needed.
 
 ```
 git clone https://github.com/ayla011/ai231-me2-voice-data.git
 cd ai231-me2-voice-data
-python setup.py                               # installs deps + downloads the model, once
-
-python scripts/record.py --speaker-id <yourid>
+python3 setup.py                              # macOS/Linux — use `python setup.py` on Windows
 ```
+
+Then run everything with `.venv`'s own python, so there's never a
+"python not found" surprise from your shell's PATH:
+
+```
+.venv/bin/python scripts/record.py --speaker-id <yourid>            # macOS/Linux
+.venv\Scripts\python.exe scripts\record.py --speaker-id <yourid>    # Windows
+```
+
+(Or activate `.venv` first — `source .venv/bin/activate` /
+`.venv\Scripts\activate` — then just `python scripts/record.py ...`.)
 
 Then upload `recordings/<yourid>/` to the shared Drive folder (see
 below). Full walkthrough: **[CONTRIBUTING.md](CONTRIBUTING.md)**.
@@ -73,9 +77,9 @@ voice recordings. Full layout and maintainer-side details:
 ## Layout
 
 ```
-setup.py                     one-shot installer: pip installs requirements
-                              into whatever interpreter is active (conda/
-                              venv/VS Code) and pre-downloads the model
+setup.py                     one-shot installer: builds .venv (finding a
+                              3.10+ Python automatically if needed),
+                              installs requirements, pre-downloads the model
 schema/prompts.csv          62 prompts: 13 fixed intents (2 phrasings each)
                              + 6 slotted intents (2 phrasings x 3 example
                              values each). One row = one utterance to say.

@@ -12,12 +12,16 @@ No manual whisper.cpp build needed -- pywhispercpp ships prebuilt
 binaries for Windows/macOS/Linux and downloads the model automatically
 on first run.
 
+Run this with .venv's own python (built by `setup.py`), not your
+system's -- e.g. `.venv/bin/python scripts/record.py ...` on macOS/Linux
+or `.venv\\Scripts\\python.exe scripts\\record.py ...` on Windows.
+
 Usage:
-  python scripts/record.py --speaker-id juandelacruz
-  python scripts/record.py --speaker-id juandelacruz --model small.en
-  python scripts/record.py --speaker-id juandelacruz --approved-takes 3
-  python scripts/record.py --speaker-id juandelacruz --labels TIMER ALARM
-  python scripts/record.py --speaker-id juandelacruz --resume   # skip prompts already fully approved
+  .venv/bin/python scripts/record.py --speaker-id juandelacruz
+  .venv/bin/python scripts/record.py --speaker-id juandelacruz --model small.en
+  .venv/bin/python scripts/record.py --speaker-id juandelacruz --approved-takes 3
+  .venv/bin/python scripts/record.py --speaker-id juandelacruz --labels TIMER ALARM
+  .venv/bin/python scripts/record.py --speaker-id juandelacruz --resume   # skip prompts already fully approved
 """
 
 from __future__ import annotations
@@ -33,8 +37,10 @@ if sys.version_info < (3, 10):
     sys.exit(
         f"Python 3.10+ required (found {sys.version_info.major}.{sys.version_info.minor}).\n"
         f"pywhispercpp itself breaks on import under 3.9 and older (it uses newer "
-        f"type-hint syntax internally). Switch to a 3.10+ conda env / venv and "
-        f"re-run 'python setup.py'."
+        f"type-hint syntax internally). Did you run this with .venv's python? "
+        f"If you haven't run setup.py yet (or it's stale), run: python3 setup.py "
+        f"(macOS/Linux) or python setup.py (Windows) -- then use .venv/bin/python "
+        f"(or .venv\\Scripts\\python.exe on Windows) to run this script."
     )
 
 import sounddevice as sd
@@ -215,7 +221,8 @@ def main():
         w.writerows(all_rows)
     print(f"\nSaved {len(new_rows)} new approved recordings. Manifest: {manifest_path}")
     if quit_early:
-        print(f"Resume later with: python scripts/record.py --speaker-id {args.speaker_id} --resume --model {args.model}")
+        print(f"Resume later with: {sys.executable} scripts/record.py "
+              f"--speaker-id {args.speaker_id} --resume --model {args.model}")
 
 
 if __name__ == "__main__":
