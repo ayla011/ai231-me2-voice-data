@@ -1,7 +1,8 @@
 # Contributing your recordings
 
-Takes about 20-30 minutes for the full prompt list (62 prompts x 2 takes
-= 124 clips at ~4s each, plus a few re-takes).
+Takes about 20-30 minutes for the full prompt list (62 prompts x 2
+approved takes = 124 approved clips at ~4s each, plus whatever retries
+you need along the way).
 
 ## 0. Prerequisites
 
@@ -28,64 +29,51 @@ bash scripts/setup_whisper.sh
 
 This clones+builds `whisper.cpp` into `~/whisper.cpp` and downloads the
 `base.en` model (~140MB). Takes a few minutes. Note the `whisper-cli`
-and model paths it prints at the end — you'll pass them to `validate.py`.
+and model paths it prints at the end — you'll pass them to `record.py`.
 
-## 3. Record
+## 3. Record, transcribe, judge, approve
 
 ```
-python scripts/record.py --speaker-id <yourid>
+python scripts/record.py --speaker-id <yourid> \
+    --whisper-bin ~/whisper.cpp/build/bin/whisper-cli \
+    --whisper-model ~/whisper.cpp/models/ggml-base.en.bin
 ```
 
 Use the `speaker_id` convention your group agreed on (see
 `docs/drive_folder_structure.md`) — it becomes both your output folder
 name and your Drive folder name, so get it right the first time.
 
-For each prompt: read it naturally (don't over-enunciate), press Enter,
-speak within the recording window, then Enter to accept or `r` to
-re-take. `s` skips a prompt, `q` stops and saves what you have so far —
-safe to resume later with `--resume`.
+For each prompt, one take at a time:
+
+1. It prints the prompt. Press Enter, speak within the recording window.
+2. whisper.cpp transcribes what it heard and shows it next to the
+   expected text (with a rough WER, just as a hint).
+3. You decide: `Enter` = keep this take, `r` = retry, `p` = play it back
+   first, `s` = skip this prompt, `q` = stop (safe to resume later).
+
+Nothing gets written to `manifest.csv` or saved as a `.wav` until you
+press `Enter` to keep it — so **by the time a take is saved, you've
+already approved it**. There's no separate validation pass; what you
+upload is what's used.
+
+For the numeric/time prompts (`TIMER`, `ALARM`, `TEMPERATURE`,
+`BRIGHTNESS`), don't be surprised if whisper's transcript looks
+"different" even when your recording is fine — it often writes "20%"
+for spoken "20 percent". Trust your ear (use `p` to play it back) over
+the WER number; the transcript is there to catch actual
+silence/mumbles/misreads, not to gate on exact string matches.
 
 Options:
-- `--takes 3` — more takes per prompt (default 2)
+- `--approved-takes 3` — how many approved recordings you want per
+  prompt (default 2)
 - `--labels TIMER ALARM` — only record specific intents (default: all)
-- `--resume` — skip prompts you've already recorded (checked against
-  your `manifest.csv`)
+- `--resume` — skip prompts that already have enough approved takes in
+  your manifest (to redo a specific one anyway, delete its row from
+  `manifest.csv` and its `.wav` first, then run with `--resume`)
 
-## 4. Validate
+## 4. Upload
 
-```
-python scripts/validate.py --speaker-id <yourid> \
-    --whisper-bin ~/whisper.cpp/build/bin/whisper-cli \
-    --whisper-model ~/whisper.cpp/models/ggml-base.en.bin
-```
-
-This transcribes every clip with whisper.cpp and writes
-`whisper_transcript`, `wer`, and `status` into your `manifest.csv`:
-
-- `pass` — good, nothing to do
-- `flag_silent` — whisper heard nothing; the clip is likely empty or the
-  mic wasn't capturing. Re-record it.
-- `flag_wer` — whisper's transcript is quite different from the prompt.
-  Listen to the clip yourself first — for the numeric/time prompts
-  (`TIMER`, `ALARM`, `TEMPERATURE`, `BRIGHTNESS`) this can be a
-  formatting artifact (whisper writes "20%" for "20 percent"), not an
-  actual misread. Only re-record if it's genuinely wrong.
-- `flag_corrupt` — the file didn't load at all. Re-record it.
-
-To re-record just the flagged ones: delete that row from `manifest.csv`
-and its `.wav` file, then run:
-
-```
-python scripts/record.py --speaker-id <yourid> --resume
-```
-
-It'll skip everything already in your manifest and only prompt you for
-what's missing. Re-run `validate.py` afterward.
-
-## 5. Upload
-
-Once you're happy with your `pass` rate, upload your entire
-`recordings/<yourid>/` folder to the shared Drive, following
-`docs/drive_folder_structure.md` exactly (folder name = your
-`speaker_id`). Don't commit recordings to this git repo — see
-`.gitignore`; audio lives on Drive only.
+Once you're through the list, upload your entire `recordings/<yourid>/`
+folder to the shared Drive, following `docs/drive_folder_structure.md`
+exactly (folder name = your `speaker_id`). Don't commit recordings to
+this git repo — see `.gitignore`; audio lives on Drive only.

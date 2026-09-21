@@ -61,10 +61,18 @@ def main():
     for speaker, n in sorted(speaker_counts.items()):
         print(f"  {speaker:>20}: {n}")
 
-    non_pass = sum(n for s, n in status_counts.items() if s != "pass")
-    if non_pass:
-        print(f"\n{non_pass} rows are not status=pass -- filter those out before training, "
-              "or ask the contributor to re-record.")
+    not_approved = sum(n for s, n in status_counts.items() if s != "approved")
+    if not_approved:
+        print(f"\n{not_approved} rows have status != approved -- record.py only ever writes "
+              "'approved', so this manifest was likely hand-edited. Check it before using.")
+
+    worst = sorted(all_rows, key=lambda r: float(r.get("wer") or 0), reverse=True)[:10]
+    if worst:
+        print("\nHighest-WER approved rows (contributors already judged these fine -- "
+              "optional spot-check only, not a requirement to fix):")
+        for row in worst:
+            print(f"  wer={float(row['wer']):.2f}  {row['source_path']}  "
+                  f"expected=\"{row['text']}\"  whisper=\"{row['whisper_transcript']}\"")
 
 
 if __name__ == "__main__":
