@@ -80,8 +80,8 @@ voice recordings. Full layout and maintainer-side details:
 setup.py                     one-shot installer: builds .venv (finding a
                               3.10+ Python automatically if needed),
                               installs requirements, pre-downloads the model
-schema/prompts.csv          62 prompts: 13 fixed intents (2 phrasings each)
-                             + 6 slotted intents (2 phrasings x 3 example
+schema/prompts.csv          93 prompts: 13 fixed intents (3 phrasings each)
+                             + 6 slotted intents (3 phrasings x 3 example
                              values each). One row = one utterance to say.
 scripts/
   record.py                  record -> whisper transcribes -> you approve -> saved,
@@ -106,6 +106,6 @@ strictly a live QA aid for this pooling step, not the model being built.
 ## Prompt schema source
 
 `schema/prompts.csv` is generated from the group's shared prompt sheet
-(the 2-variation / 3-example-value table). If the schema changes, edit
+(the 3-variation / 3-example-value table). If the schema changes, edit
 that CSV directly — it's the single source of truth all scripts read
 from.

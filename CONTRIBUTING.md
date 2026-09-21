@@ -1,7 +1,7 @@
 # Contributing your recordings
 
-Takes about 20-30 minutes for the full prompt list (62 prompts x 2
-approved takes = 124 approved clips at 5s each). You can retry a take as
+Takes about 30-45 minutes for the full prompt list (93 prompts x 2
+approved takes = 186 approved clips at 5s each). You can retry a take as
 many times as you want before approving it — only approved takes count.
 
 ## 0. Prerequisites
