@@ -6,6 +6,19 @@
 # Usage: bash scripts/setup_whisper.sh [install_dir]
 set -euo pipefail
 
+if ! command -v cmake >/dev/null 2>&1; then
+  echo "ERROR: cmake not found."
+  echo "  macOS:  brew install cmake"
+  echo "  Linux:  sudo apt install cmake build-essential"
+  echo "Then re-run this script."
+  exit 1
+fi
+
+if ! command -v git >/dev/null 2>&1; then
+  echo "ERROR: git not found. Install it, then re-run this script."
+  exit 1
+fi
+
 INSTALL_DIR="${1:-$HOME/whisper.cpp}"
 
 if [ ! -d "$INSTALL_DIR" ]; then

@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import os
 import re
 import shutil
 import subprocess
@@ -84,10 +85,10 @@ def resolve_whisper_bin(path_str: str) -> str:
     if which:
         return which
 
-    search_root = Path.home() / "whisper.cpp"
-    if search_root.exists():
+    build_dir = Path.home() / "whisper.cpp" / "build"
+    if build_dir.exists():
         for name in ("whisper-cli", "whisper-cli.exe", "main", "main.exe"):
-            hits = list(search_root.rglob(name))
+            hits = [h for h in build_dir.rglob(name) if h.is_file() and os.access(h, os.X_OK)]
             if hits:
                 print(f"Note: '{path_str}' not found; using discovered binary instead: {hits[0]}")
                 return str(hits[0])
