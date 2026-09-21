@@ -26,8 +26,37 @@ python scripts/record.py --speaker-id <yourid> \
     --whisper-model ~/whisper.cpp/models/ggml-base.en.bin
 ```
 
-Then upload `recordings/<yourid>/` to the shared Drive folder. Full
-walkthrough: **[CONTRIBUTING.md](CONTRIBUTING.md)**.
+Then upload `recordings/<yourid>/` to the shared Drive folder (see
+below). Full walkthrough: **[CONTRIBUTING.md](CONTRIBUTING.md)**.
+
+## Uploading your recordings
+
+1. After `record.py` finishes (everything in it is already approved),
+   you'll have a folder at `recordings/<your-speaker-id>/` with your
+   `.wav` files and one `manifest.csv`.
+2. Go to the shared Drive folder: **`AI231-ME2-Voice-Data/raw/`**
+3. Upload your entire `recordings/<your-speaker-id>/` folder into
+   `raw/`, so it lands as:
+   ```
+   AI231-ME2-Voice-Data/raw/<your-speaker-id>/
+     manifest.csv
+     *.wav
+   ```
+4. **Your Drive folder name must exactly match the `--speaker-id` you
+   used when recording** — lowercase, no spaces (e.g. `juandelacruz` or
+   your student number `2024-12345`), matching whatever convention the
+   group agreed on. This is what lets everyone's data merge
+   automatically later.
+5. Don't rename files or hand-edit `manifest.csv` afterward.
+6. Recording more later? Upload into that *same* folder to add/overwrite
+   files — don't create a second folder for yourself.
+7. Nothing goes to GitHub — this repo is code/schema only. Drive is
+   audio only.
+
+The Drive folder itself should be shared as **Editor, restricted to
+class members** — not "anyone with the link" — since it holds actual
+voice recordings. Full layout and maintainer-side details:
+**[docs/drive_folder_structure.md](docs/drive_folder_structure.md)**.
 
 ## Layout
 
