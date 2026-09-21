@@ -15,7 +15,7 @@ you need along the way).
 ## 1. Clone and install
 
 ```
-git clone <this repo's URL>
+git clone https://github.com/ayla011/ai231-me2-voice-data.git
 cd ai231-me2-voice-data
 python3 -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
