@@ -21,6 +21,7 @@ from __future__ import annotations
 import argparse
 import csv
 import re
+import shutil
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -73,6 +74,40 @@ def word_error_rate(ref: list[str], hyp: list[str]) -> float:
             else:
                 dp[i][j] = 1 + min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1])
     return dp[n][m] / n
+
+
+def resolve_whisper_bin(path_str: str) -> str:
+    p = Path(path_str).expanduser()
+    if p.is_file():
+        return str(p)
+    which = shutil.which(path_str)
+    if which:
+        return which
+
+    search_root = Path.home() / "whisper.cpp"
+    if search_root.exists():
+        for name in ("whisper-cli", "whisper-cli.exe", "main", "main.exe"):
+            hits = list(search_root.rglob(name))
+            if hits:
+                print(f"Note: '{path_str}' not found; using discovered binary instead: {hits[0]}")
+                return str(hits[0])
+
+    sys.exit(
+        f"whisper.cpp binary not found: '{path_str}'\n"
+        f"Run: bash scripts/setup_whisper.sh\n"
+        f"It prints the real 'whisper-cli:' path at the end -- pass that with --whisper-bin.\n"
+        f"Or search yourself: find ~/whisper.cpp -iname 'whisper-cli*' -o -iname 'main*'"
+    )
+
+
+def resolve_whisper_model(path_str: str) -> str:
+    p = Path(path_str).expanduser()
+    if p.is_file():
+        return str(p)
+    sys.exit(
+        f"whisper.cpp model not found: '{path_str}'\n"
+        f"Run: bash scripts/setup_whisper.sh (downloads models/ggml-base.en.bin)"
+    )
 
 
 def record_clip(duration: float):
@@ -149,10 +184,13 @@ def main():
     ap.add_argument("--whisper-bin", default="whisper-cli")
     ap.add_argument("--whisper-model", required=True)
     ap.add_argument("--approved-takes", type=int, default=2, help="approved recordings wanted per prompt")
-    ap.add_argument("--duration", type=float, default=3.5, help="seconds per take")
+    ap.add_argument("--duration", type=float, default=5.0, help="seconds per take")
     ap.add_argument("--labels", nargs="*", default=None, help="only record these labels (default: all)")
     ap.add_argument("--resume", action="store_true", help="skip prompts already fully approved in your manifest")
     args = ap.parse_args()
+
+    args.whisper_bin = resolve_whisper_bin(args.whisper_bin)
+    args.whisper_model = resolve_whisper_model(args.whisper_model)
 
     prompts = load_prompts(Path(args.prompts))
     if args.labels:

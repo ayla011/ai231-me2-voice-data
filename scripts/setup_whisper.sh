@@ -18,8 +18,17 @@ cmake --build build -j --config Release
 
 bash ./models/download-ggml-model.sh base.en
 
-BIN="$(find build -type f -name whisper-cli | head -n1)"
+BIN="$(find build -type f \( -name whisper-cli -o -name main \) | head -n1)"
 MODEL="$INSTALL_DIR/models/ggml-base.en.bin"
+
+if [ -z "$BIN" ]; then
+  echo
+  echo "ERROR: build finished but no whisper-cli/main binary was found under build/."
+  echo "Scroll up and check the cmake --build output for errors."
+  echo "On macOS, a common cause is the Xcode Command Line Tools license not"
+  echo "being accepted yet -- run 'sudo xcodebuild -license', then re-run this script."
+  exit 1
+fi
 
 echo
 echo "Done."
