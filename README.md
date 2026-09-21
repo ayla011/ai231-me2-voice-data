@@ -7,6 +7,11 @@ transcribes it immediately and the contributor judges on the spot
 whether to keep it or retry. Nothing gets saved until approved, so
 everything that reaches the shared pool is already clean.
 
+No compiler, cmake, or manual whisper.cpp build required — the whisper
+model runs through [pywhispercpp](https://github.com/absadiki/pywhispercpp),
+which ships prebuilt binaries for Windows, macOS, and Linux and downloads
+the model automatically on first run.
+
 **Scope & privacy:** this repo (code, prompt schema, docs) is public and
 contains no one's voice. The actual recordings go to a separate,
 access-restricted Drive folder — never here. See
@@ -14,16 +19,17 @@ access-restricted Drive folder — never here. See
 
 ## Quickstart
 
+Activate whatever Python environment you're recording with (a conda env,
+or the venv VS Code creates when you pick an interpreter) — `setup.py`
+installs into that same one, so there's no separate venv to set up
+first.
+
 ```
 git clone https://github.com/ayla011/ai231-me2-voice-data.git
 cd ai231-me2-voice-data
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-bash scripts/setup_whisper.sh                 # one-time whisper.cpp build
+python setup.py                               # installs deps + downloads the model, once
 
-python scripts/record.py --speaker-id <yourid> \
-    --whisper-bin ~/whisper.cpp/build/bin/whisper-cli \
-    --whisper-model ~/whisper.cpp/models/ggml-base.en.bin
+python scripts/record.py --speaker-id <yourid>
 ```
 
 Then upload `recordings/<yourid>/` to the shared Drive folder (see
@@ -61,12 +67,14 @@ voice recordings. Full layout and maintainer-side details:
 ## Layout
 
 ```
+setup.py                     one-shot installer: pip installs requirements
+                              into whatever interpreter is active (conda/
+                              venv/VS Code) and pre-downloads the model
 schema/prompts.csv          62 prompts: 13 fixed intents (2 phrasings each)
                              + 6 slotted intents (2 phrasings x 3 example
                              values each). One row = one utterance to say.
 scripts/
-  setup_whisper.sh           builds whisper.cpp + downloads the base.en model
-  record.py                  record -> whisper.cpp transcribes -> you approve -> saved,
+  record.py                  record -> whisper transcribes -> you approve -> saved,
                               one prompt at a time, into recordings/<speaker_id>/
   build_master_manifest.py   maintainer-only: merges every contributor's
                               manifest.csv (from Drive) into one master CSV

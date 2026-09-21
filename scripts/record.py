@@ -2,34 +2,44 @@
 """Guided recording session for the AI231 ME2 voice-data pool.
 
 Walks through schema/prompts.csv one utterance at a time. For each take:
-record -> whisper.cpp transcribes it immediately -> you judge whether to
-keep it or retry, right there. Nothing is saved until you approve it, so
-whatever ends up in your manifest.csv is already the clean, final take --
-there's no separate validation pass before upload.
+record -> whisper.cpp (via pywhispercpp) transcribes it immediately ->
+you judge whether to keep it or retry, right there. Nothing is saved
+until you approve it, so whatever ends up in your manifest.csv is
+already the clean, final take -- there's no separate validation pass
+before upload.
+
+No manual whisper.cpp build needed -- pywhispercpp ships prebuilt
+binaries for Windows/macOS/Linux and downloads the model automatically
+on first run.
 
 Usage:
-  python scripts/record.py --speaker-id juandelacruz \
-      --whisper-bin ~/whisper.cpp/build/bin/whisper-cli \
-      --whisper-model ~/whisper.cpp/models/ggml-base.en.bin
-  python scripts/record.py --speaker-id juandelacruz --approved-takes 3 ...
-  python scripts/record.py --speaker-id juandelacruz --labels TIMER ALARM ...
-  python scripts/record.py --speaker-id juandelacruz --resume ...   # skip prompts already fully approved
+  python scripts/record.py --speaker-id juandelacruz
+  python scripts/record.py --speaker-id juandelacruz --model small.en
+  python scripts/record.py --speaker-id juandelacruz --approved-takes 3
+  python scripts/record.py --speaker-id juandelacruz --labels TIMER ALARM
+  python scripts/record.py --speaker-id juandelacruz --resume   # skip prompts already fully approved
 """
 
 from __future__ import annotations
 
 import argparse
 import csv
-import os
 import re
-import shutil
-import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+if sys.version_info < (3, 10):
+    sys.exit(
+        f"Python 3.10+ required (found {sys.version_info.major}.{sys.version_info.minor}).\n"
+        f"pywhispercpp itself breaks on import under 3.9 and older (it uses newer "
+        f"type-hint syntax internally). Switch to a 3.10+ conda env / venv and "
+        f"re-run 'python setup.py'."
+    )
+
 import sounddevice as sd
 import soundfile as sf
+from pywhispercpp.model import Model
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SAMPLE_RATE = 16000
@@ -77,40 +87,6 @@ def word_error_rate(ref: list[str], hyp: list[str]) -> float:
     return dp[n][m] / n
 
 
-def resolve_whisper_bin(path_str: str) -> str:
-    p = Path(path_str).expanduser()
-    if p.is_file():
-        return str(p)
-    which = shutil.which(path_str)
-    if which:
-        return which
-
-    build_dir = Path.home() / "whisper.cpp" / "build"
-    if build_dir.exists():
-        for name in ("whisper-cli", "whisper-cli.exe", "main", "main.exe"):
-            hits = [h for h in build_dir.rglob(name) if h.is_file() and os.access(h, os.X_OK)]
-            if hits:
-                print(f"Note: '{path_str}' not found; using discovered binary instead: {hits[0]}")
-                return str(hits[0])
-
-    sys.exit(
-        f"whisper.cpp binary not found: '{path_str}'\n"
-        f"Run: bash scripts/setup_whisper.sh\n"
-        f"It prints the real 'whisper-cli:' path at the end -- pass that with --whisper-bin.\n"
-        f"Or search yourself: find ~/whisper.cpp -iname 'whisper-cli*' -o -iname 'main*'"
-    )
-
-
-def resolve_whisper_model(path_str: str) -> str:
-    p = Path(path_str).expanduser()
-    if p.is_file():
-        return str(p)
-    sys.exit(
-        f"whisper.cpp model not found: '{path_str}'\n"
-        f"Run: bash scripts/setup_whisper.sh (downloads models/ggml-base.en.bin)"
-    )
-
-
 def record_clip(duration: float):
     print(f"  Recording for {duration:.1f}s... speak now.")
     audio = sd.rec(int(duration * SAMPLE_RATE), samplerate=SAMPLE_RATE, channels=1, dtype="float32")
@@ -118,19 +94,17 @@ def record_clip(duration: float):
     return audio.flatten()
 
 
-def transcribe(whisper_bin: str, model: str, audio, tmp_path: Path) -> str:
-    sf.write(str(tmp_path), audio, SAMPLE_RATE, subtype="PCM_16")
-    result = subprocess.run(
-        [whisper_bin, "-m", model, "-f", str(tmp_path), "-nt"],
-        capture_output=True, text=True,
-    )
-    return result.stdout.strip()
+def transcribe(model: Model, audio) -> str:
+    segments = model.transcribe(audio, print_progress=False)
+    text = " ".join(seg.text for seg in segments).strip()
+    if text in ("[BLANK_AUDIO]", "[SILENCE]", "[NO SPEECH]"):
+        return ""  # whisper.cpp's own silence tags -- treat as nothing heard
+    return text
 
 
-def record_and_approve(prompt: dict, take: int, args) -> dict | None:
+def record_and_approve(prompt: dict, take: int, args, model: Model) -> dict | None:
     """Record/transcribe/judge loop for one take. Returns the manifest
     row once approved, {"__quit__": True} on quit, or None if skipped."""
-    tmp_path = REPO_ROOT / ".tmp_take.wav"
     expected_words = normalize(prompt["text"])
 
     while True:
@@ -142,7 +116,7 @@ def record_and_approve(prompt: dict, take: int, args) -> dict | None:
 
         audio = record_clip(args.duration)
         print("  Transcribing...")
-        hyp_text = transcribe(args.whisper_bin, args.whisper_model, audio, tmp_path)
+        hyp_text = transcribe(model, audio)
         wer = word_error_rate(expected_words, normalize(hyp_text)) if hyp_text else 1.0
         print(f"    expected: \"{prompt['text']}\"")
         print(f"    whisper:  \"{hyp_text or '(nothing heard)'}\"  (wer={wer:.2f})")
@@ -182,16 +156,12 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--speaker-id", required=True, help="your name or student number, no spaces (e.g. juandelacruz)")
     ap.add_argument("--prompts", default=str(REPO_ROOT / "schema/prompts.csv"))
-    ap.add_argument("--whisper-bin", default="whisper-cli")
-    ap.add_argument("--whisper-model", required=True)
+    ap.add_argument("--model", default="base.en", help="pywhispercpp model name (auto-downloaded) or path to a local .bin")
     ap.add_argument("--approved-takes", type=int, default=2, help="approved recordings wanted per prompt")
     ap.add_argument("--duration", type=float, default=5.0, help="seconds per take")
     ap.add_argument("--labels", nargs="*", default=None, help="only record these labels (default: all)")
     ap.add_argument("--resume", action="store_true", help="skip prompts already fully approved in your manifest")
     args = ap.parse_args()
-
-    args.whisper_bin = resolve_whisper_bin(args.whisper_bin)
-    args.whisper_model = resolve_whisper_model(args.whisper_model)
 
     prompts = load_prompts(Path(args.prompts))
     if args.labels:
@@ -199,6 +169,9 @@ def main():
         prompts = [p for p in prompts if p["label"] in wanted]
     if not prompts:
         sys.exit("No prompts matched --labels; check schema/prompts.csv for valid label names.")
+
+    print(f"Loading whisper model '{args.model}' (first run downloads it automatically)...")
+    model = Model(args.model, redirect_whispercpp_logs_to=False)
 
     out_dir = REPO_ROOT / "recordings" / args.speaker_id
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -220,7 +193,7 @@ def main():
         for take in range(already + 1, args.approved_takes + 1):
             print(f"[{i}/{len(prompts)}] ({prompt['label']}, take {take}/{args.approved_takes}) say:")
             print(f"    \"{prompt['text']}\"")
-            row = record_and_approve(prompt, take, args)
+            row = record_and_approve(prompt, take, args, model)
             if row is None:
                 break  # skipped -- move to next prompt
             if row.get("__quit__"):
@@ -230,10 +203,6 @@ def main():
             print("  approved.\n")
         if quit_early:
             break
-
-    tmp_path = REPO_ROOT / ".tmp_take.wav"
-    if tmp_path.exists():
-        tmp_path.unlink()
 
     if not new_rows:
         print("\nNo new recordings.")
@@ -246,8 +215,7 @@ def main():
         w.writerows(all_rows)
     print(f"\nSaved {len(new_rows)} new approved recordings. Manifest: {manifest_path}")
     if quit_early:
-        print(f"Resume later with: python scripts/record.py --speaker-id {args.speaker_id} --resume "
-              f"--whisper-bin {args.whisper_bin} --whisper-model {args.whisper_model}")
+        print(f"Resume later with: python scripts/record.py --speaker-id {args.speaker_id} --resume --model {args.model}")
 
 
 if __name__ == "__main__":
