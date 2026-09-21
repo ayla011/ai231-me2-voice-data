@@ -1,0 +1,63 @@
+prompt_id,label,type,text,slot_value
+PLAY_MUSIC_V1,PLAY_MUSIC,fixed,Play music,
+PLAY_MUSIC_V2,PLAY_MUSIC,fixed,Play a song,
+WEATHER_V1,WEATHER,fixed,Weather,
+WEATHER_V2,WEATHER,fixed,What's the weather?,
+TIME_V1,TIME,fixed,Time,
+TIME_V2,TIME,fixed,What time is it?,
+LIGHT_ON_V1,LIGHT_ON,fixed,Lights on,
+LIGHT_ON_V2,LIGHT_ON,fixed,Power on the lights,
+LIGHT_OFF_V1,LIGHT_OFF,fixed,Lights off,
+LIGHT_OFF_V2,LIGHT_OFF,fixed,Kill the lights,
+PAUSE_V1,PAUSE,fixed,Pause,
+PAUSE_V2,PAUSE,fixed,Pause the music,
+STOP_V1,STOP,fixed,Stop song,
+STOP_V2,STOP,fixed,Stop music,
+NEXT_V1,NEXT,fixed,Skip song,
+NEXT_V2,NEXT,fixed,Next song,
+VOLUME_UP_V1,VOLUME_UP,fixed,Volume up,
+VOLUME_UP_V2,VOLUME_UP,fixed,Increase the volume,
+VOLUME_DOWN_V1,VOLUME_DOWN,fixed,Volume down,
+VOLUME_DOWN_V2,VOLUME_DOWN,fixed,Lower the volume,
+CALL_V1,CALL,fixed,Call,
+CALL_V2,CALL,fixed,Make a call,
+MESSAGE_V1,MESSAGE,fixed,Message,
+MESSAGE_V2,MESSAGE,fixed,Send a message,
+LIST_REMINDERS_V1,LIST_REMINDERS,fixed,Reminders,
+LIST_REMINDERS_V2,LIST_REMINDERS,fixed,Show my reminders,
+TIMER_V1_1,TIMER,slotted,Timer 10 seconds,10 seconds
+TIMER_V1_2,TIMER,slotted,Timer 30 seconds,30 seconds
+TIMER_V1_3,TIMER,slotted,Timer 1 minute,1 minute
+TIMER_V2_1,TIMER,slotted,Countdown for 10 seconds,10 seconds
+TIMER_V2_2,TIMER,slotted,Countdown for 30 seconds,30 seconds
+TIMER_V2_3,TIMER,slotted,Countdown for 1 minute,1 minute
+ALARM_V1_1,ALARM,slotted,Alarm 6:00 AM,6:00 AM
+ALARM_V1_2,ALARM,slotted,Alarm 8:00 AM,8:00 AM
+ALARM_V1_3,ALARM,slotted,Alarm 9:00 PM,9:00 PM
+ALARM_V2_1,ALARM,slotted,Wake me up at 6:00 AM,6:00 AM
+ALARM_V2_2,ALARM,slotted,Wake me up at 8:00 AM,8:00 AM
+ALARM_V2_3,ALARM,slotted,Wake me up at 9:00 PM,9:00 PM
+TEMPERATURE_V1_1,TEMPERATURE,slotted,Temperature 18 degrees,18 degrees
+TEMPERATURE_V1_2,TEMPERATURE,slotted,Temperature 22 degrees,22 degrees
+TEMPERATURE_V1_3,TEMPERATURE,slotted,Temperature 26 degrees,26 degrees
+TEMPERATURE_V2_1,TEMPERATURE,slotted,Change the temperature to 18 degrees,18 degrees
+TEMPERATURE_V2_2,TEMPERATURE,slotted,Change the temperature to 22 degrees,22 degrees
+TEMPERATURE_V2_3,TEMPERATURE,slotted,Change the temperature to 26 degrees,26 degrees
+BRIGHTNESS_V1_1,BRIGHTNESS,slotted,Brightness 20 percent,20 percent
+BRIGHTNESS_V1_2,BRIGHTNESS,slotted,Brightness 60 percent,60 percent
+BRIGHTNESS_V1_3,BRIGHTNESS,slotted,Brightness 100 percent,100 percent
+BRIGHTNESS_V2_1,BRIGHTNESS,slotted,Set the brightness to 20 percent,20 percent
+BRIGHTNESS_V2_2,BRIGHTNESS,slotted,Set the brightness to 60 percent,60 percent
+BRIGHTNESS_V2_3,BRIGHTNESS,slotted,Set the brightness to 100 percent,100 percent
+COLOR_V1_1,COLOR,slotted,Color Red,Red
+COLOR_V1_2,COLOR,slotted,Color Blue,Blue
+COLOR_V1_3,COLOR,slotted,Color Green,Green
+COLOR_V2_1,COLOR,slotted,Change the lights to Red,Red
+COLOR_V2_2,COLOR,slotted,Change the lights to Blue,Blue
+COLOR_V2_3,COLOR,slotted,Change the lights to Green,Green
+CREATE_REMINDER_V1_1,CREATE_REMINDER,slotted,Reminder Drink water,Drink water
+CREATE_REMINDER_V1_2,CREATE_REMINDER,slotted,Reminder Study,Study
+CREATE_REMINDER_V1_3,CREATE_REMINDER,slotted,Reminder Exercise,Exercise
+CREATE_REMINDER_V2_1,CREATE_REMINDER,slotted,Remind me to Drink water,Drink water
+CREATE_REMINDER_V2_2,CREATE_REMINDER,slotted,Remind me to Study,Study
+CREATE_REMINDER_V2_3,CREATE_REMINDER,slotted,Remind me to Exercise,Exercise

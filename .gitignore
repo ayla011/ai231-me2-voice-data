@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+
+# Audio and per-speaker manifests never get committed here -- they go to
+# the shared Drive folder (see docs/drive_folder_structure.md). Git only
+# holds code, schema, and docs.
+recordings/*/
+!recordings/.gitkeep
