@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Builds whisper.cpp and downloads the small English model used by
-# scripts/validate.py. Run once. Requires git, cmake, and a C++ compiler
+# scripts/record.py. Run once. Requires git, cmake, and a C++ compiler
 # (macOS: Xcode Command Line Tools; Linux: build-essential).
 #
 # Usage: bash scripts/setup_whisper.sh [install_dir]
@@ -27,4 +27,4 @@ echo "whisper-cli:  $BIN"
 echo "model:        $MODEL"
 echo
 echo "Add whisper-cli to your PATH, or pass it explicitly:"
-echo "  python scripts/validate.py --speaker-id you --whisper-bin \"$BIN\" --whisper-model \"$MODEL\""
+echo "  python scripts/record.py --speaker-id you --whisper-bin \"$BIN\" --whisper-model \"$MODEL\""
